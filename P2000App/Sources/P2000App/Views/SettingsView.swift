@@ -4,14 +4,14 @@ import MapKit
 
 struct SettingsView: View {
     @AppStorage("language") private var language: String = Locale.current.language.languageCode?.identifier ?? "en"
-    @State private var radius: Double = 25
+    @AppStorage("radius") private var radius: Double = 25
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 52.1, longitude: 5.1),
         span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
     )
 
-    @State private var caching: Bool = true
+    @AppStorage("caching") private var caching: Bool = true
 
     var body: some View {
         NavigationView {
