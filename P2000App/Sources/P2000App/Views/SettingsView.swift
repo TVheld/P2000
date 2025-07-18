@@ -1,13 +1,16 @@
 import SwiftUI
+
 import MapKit
 
 struct SettingsView: View {
     @AppStorage("language") private var language: String = Locale.current.language.languageCode?.identifier ?? "en"
     @State private var radius: Double = 25
+
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 52.1, longitude: 5.1),
         span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
     )
+
     @State private var caching: Bool = true
 
     var body: some View {
@@ -22,6 +25,7 @@ struct SettingsView: View {
                 }
 
                 Section(header: Text("Bereik")) {
+
                     VStack(spacing: 8) {
                         Map(coordinateRegion: $region) {
                             MapCircle(center: region.center, radius: radius * 1000)
@@ -35,6 +39,7 @@ struct SettingsView: View {
                                 .onChange(of: radius) { updateRegion(for: $0) }
                             Text("\(Int(radius)) km")
                         }
+
                     }
                 }
 
@@ -46,10 +51,12 @@ struct SettingsView: View {
         }
     }
 
+
     private func updateRegion(for value: Double) {
         let span = value / 111.0
         region.span = MKCoordinateSpan(latitudeDelta: span * 2, longitudeDelta: span * 2)
     }
+
 }
 
 #Preview {
