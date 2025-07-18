@@ -13,12 +13,6 @@ struct SettingsView: View {
 
     @AppStorage("caching") private var caching: Bool = true
 
-    private struct RadiusOverlay: Identifiable {
-        let id = UUID()
-        var center: CLLocationCoordinate2D
-        var radius: CLLocationDistance
-    }
-
     var body: some View {
         NavigationStack {
             Form {
@@ -33,17 +27,16 @@ struct SettingsView: View {
                 Section(header: Text("Bereik")) {
 
                     VStack(spacing: 8) {
-                        Map(coordinateRegion: $region,
-                            annotationItems: [RadiusOverlay(center: region.center,
-                                                          radius: radius * 1000)]) { _ in
-                            EmptyView()
-                        } overlayItems: [RadiusOverlay(center: region.center,
-                                                      radius: radius * 1000)] { item in
-                            MapCircle(center: item.center, radius: item.radius)
-                                .foregroundStyle(.blue.opacity(0.3))
+                        ZStack {
+                            Map(coordinateRegion: $region)
+                                .frame(height: 200)
+                                .onAppear { updateRegion(for: radius) }
+                            // Overlay circle directly above the map for visual indication
+                            Circle()
+                                .stroke(Color.blue.opacity(0.3), lineWidth: 4)
+                                .frame(width: CGFloat(radius * 4), height: CGFloat(radius * 4))
+                                .allowsHitTesting(false)
                         }
-                        .frame(height: 200)
-                        .onAppear { updateRegion(for: radius) }
 
                         HStack {
                             Slider(value: $radius, in: 5...100, step: 5)
