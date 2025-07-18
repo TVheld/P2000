@@ -4,14 +4,20 @@ import MapKit
 
 struct SettingsView: View {
     @AppStorage("language") private var language: String = Locale.current.language.languageCode?.identifier ?? "en"
-    @State private var radius: Double = 25
+    @AppStorage("radius") private var radius: Double = 25
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 52.1, longitude: 5.1),
         span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
     )
 
-    @State private var caching: Bool = true
+    @AppStorage("caching") private var caching: Bool = true
+
+    private struct RadiusOverlay: Identifiable {
+        let id = UUID()
+        var center: CLLocationCoordinate2D
+        var radius: CLLocationDistance
+    }
 
     var body: some View {
         NavigationStack {
@@ -27,8 +33,13 @@ struct SettingsView: View {
                 Section(header: Text("Bereik")) {
 
                     VStack(spacing: 8) {
-                        Map(coordinateRegion: $region) {
-                            MapCircle(center: region.center, radius: radius * 1000)
+                        Map(coordinateRegion: $region,
+                            annotationItems: [RadiusOverlay(center: region.center,
+                                                          radius: radius * 1000)]) { _ in
+                            EmptyView()
+                        } overlayItems: [RadiusOverlay(center: region.center,
+                                                      radius: radius * 1000)] { item in
+                            MapCircle(center: item.center, radius: item.radius)
                                 .foregroundStyle(.blue.opacity(0.3))
                         }
                         .frame(height: 200)
@@ -54,9 +65,11 @@ struct SettingsView: View {
 
     private func updateRegion(for value: Double) {
         let spanDegrees = (value / 111.0) * 2
+
         let newSpan = MKCoordinateSpan(latitudeDelta: spanDegrees,
                                        longitudeDelta: spanDegrees)
         region = MKCoordinateRegion(center: region.center, span: newSpan)
+
     }
 
 }
