@@ -14,7 +14,7 @@ struct SettingsView: View {
     @State private var caching: Bool = true
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Taal")) {
                     Picker("Taal", selection: $language) {
