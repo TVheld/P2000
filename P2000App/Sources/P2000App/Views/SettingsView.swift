@@ -4,14 +4,14 @@ import MapKit
 
 struct SettingsView: View {
     @AppStorage("language") private var language: String = Locale.current.language.languageCode?.identifier ?? "en"
-    @State private var radius: Double = 25
+    @AppStorage("radius") private var radius: Double = 25
 
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 52.1, longitude: 5.1),
         span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
     )
 
-    @State private var caching: Bool = true
+    @AppStorage("caching") private var caching: Bool = true
 
     private struct RadiusOverlay: Identifiable {
         let id = UUID()
@@ -20,7 +20,7 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Taal")) {
                     Picker("Taal", selection: $language) {
@@ -65,9 +65,11 @@ struct SettingsView: View {
 
     private func updateRegion(for value: Double) {
         let spanDegrees = (value / 111.0) * 2
+
         let newSpan = MKCoordinateSpan(latitudeDelta: spanDegrees,
                                        longitudeDelta: spanDegrees)
         region = MKCoordinateRegion(center: region.center, span: newSpan)
+
     }
 
 }
