@@ -13,6 +13,12 @@ struct SettingsView: View {
 
     @State private var caching: Bool = true
 
+    private struct RadiusOverlay: Identifiable {
+        let id = UUID()
+        var center: CLLocationCoordinate2D
+        var radius: CLLocationDistance
+    }
+
     var body: some View {
         NavigationView {
             Form {
@@ -27,8 +33,13 @@ struct SettingsView: View {
                 Section(header: Text("Bereik")) {
 
                     VStack(spacing: 8) {
-                        Map(coordinateRegion: $region) {
-                            MapCircle(center: region.center, radius: radius * 1000)
+                        Map(coordinateRegion: $region,
+                            annotationItems: [RadiusOverlay(center: region.center,
+                                                          radius: radius * 1000)]) { _ in
+                            EmptyView()
+                        } overlayItems: [RadiusOverlay(center: region.center,
+                                                      radius: radius * 1000)] { item in
+                            MapCircle(center: item.center, radius: item.radius)
                                 .foregroundStyle(.blue.opacity(0.3))
                         }
                         .frame(height: 200)
@@ -53,8 +64,10 @@ struct SettingsView: View {
 
 
     private func updateRegion(for value: Double) {
-        let span = value / 111.0
-        region.span = MKCoordinateSpan(latitudeDelta: span * 2, longitudeDelta: span * 2)
+        let spanDegrees = (value / 111.0) * 2
+        let newSpan = MKCoordinateSpan(latitudeDelta: spanDegrees,
+                                       longitudeDelta: spanDegrees)
+        region = MKCoordinateRegion(center: region.center, span: newSpan)
     }
 
 }
