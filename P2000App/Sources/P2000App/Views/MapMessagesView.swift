@@ -1,43 +1,72 @@
 import SwiftUI
 import MapKit
 
-struct MapMessagesView: View {
-    @EnvironmentObject var store: P2000Store
-    @State private var hours: Double = 24
+
+struct SettingsView: View {
+    @AppStorage("language") private var language: String = Locale.current.language.languageCode?.identifier ?? "en"
+    @AppStorage("radius") private var radius: Double = 25
+
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 52.1, longitude: 5.1),
-        span: MKCoordinateSpan(latitudeDelta: 2.0, longitudeDelta: 2.0)
+        span: MKCoordinateSpan(latitudeDelta: 0.5, longitudeDelta: 0.5)
     )
 
+    @AppStorage("caching") private var caching: Bool = true
+
     var body: some View {
-        NavigationView {
-            Map(coordinateRegion: $region, annotationItems: recentMessages) { message in
-                MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: message.latitude ?? 0, longitude: message.longitude ?? 0)) {
-                    Circle()
-                        .strokeBorder(Color.blue, lineWidth: 2)
-                        .frame(width: 20, height: 20)
-                        .background(Circle().fill(Color.blue.opacity(0.3)))
+        NavigationStack {
+            Form {
+                Section(header: Text("Taal")) {
+                    Picker("Taal", selection: $language) {
+                        Text("Nederlands").tag("nl")
+                        Text("English").tag("en")
+                    }
+                    .pickerStyle(.segmented)
                 }
-            }
-            .navigationTitle("Meldingen")
-            .toolbar {
-                ToolbarItem(placement: .bottomBar) {
-                    HStack {
-                        Text("\(Int(hours))u")
-                        Slider(value: $hours, in: 12...168, step: 12)
+
+                Section(header: Text("Bereik")) {
+
+                    VStack(spacing: 8) {
+                        ZStack {
+                            Map(coordinateRegion: $region)
+                                .frame(height: 200)
+                                .onAppear { updateRegion(for: radius) }
+                            // Overlay circle directly above the map for visual indication
+                            Circle()
+                                .stroke(Color.blue.opacity(0.3), lineWidth: 4)
+                                .frame(width: CGFloat(radius * 4), height: CGFloat(radius * 4))
+                                .allowsHitTesting(false)
+                        }
+
+                        HStack {
+                            Slider(value: $radius, in: 5...100, step: 5)
+                                .onChange(of: radius) { updateRegion(for: $0) }
+                            Text("\(Int(radius)) km")
+                        }
+
                     }
                 }
+
+                Section(header: Text("Opslag")) {
+                    Toggle("Caching", isOn: $caching)
+                }
             }
+            .navigationTitle("Instellingen")
         }
     }
 
-    private var recentMessages: [P2000Message] {
-        let cutoff = Date().addingTimeInterval(-hours * 3600)
-        return store.messages.filter { $0.timestamp >= cutoff }
+
+    private func updateRegion(for value: Double) {
+        let spanDegrees = (value / 111.0) * 2
+
+        let newSpan = MKCoordinateSpan(latitudeDelta: spanDegrees,
+                                       longitudeDelta: spanDegrees)
+        region = MKCoordinateRegion(center: region.center, span: newSpan)
+
     }
+
 }
 
 #Preview {
-    MapMessagesView()
-        .environmentObject(P2000Store())
+    SettingsView()
 }
