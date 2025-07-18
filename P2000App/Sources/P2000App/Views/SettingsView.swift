@@ -14,7 +14,7 @@ struct SettingsView: View {
     @State private var caching: Bool = true
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Taal")) {
                     Picker("Taal", selection: $language) {
@@ -53,8 +53,10 @@ struct SettingsView: View {
 
 
     private func updateRegion(for value: Double) {
-        let span = value / 111.0
-        region.span = MKCoordinateSpan(latitudeDelta: span * 2, longitudeDelta: span * 2)
+        let spanDegrees = (value / 111.0) * 2
+        let newSpan = MKCoordinateSpan(latitudeDelta: spanDegrees,
+                                       longitudeDelta: spanDegrees)
+        region = MKCoordinateRegion(center: region.center, span: newSpan)
     }
 
 }
