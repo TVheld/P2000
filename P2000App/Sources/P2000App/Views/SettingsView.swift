@@ -54,9 +54,9 @@ struct SettingsView: View {
 
     private func updateRegion(for value: Double) {
         let spanDegrees = (value / 111.0) * 2
-        region = MKCoordinateRegion(center: region.center,
-                                    span: MKCoordinateSpan(latitudeDelta: spanDegrees,
-                                                           longitudeDelta: spanDegrees))
+        let newSpan = MKCoordinateSpan(latitudeDelta: spanDegrees,
+                                       longitudeDelta: spanDegrees)
+        region = MKCoordinateRegion(center: region.center, span: newSpan)
     }
 
 }
